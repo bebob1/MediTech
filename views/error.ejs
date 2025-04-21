@@ -1,0 +1,12 @@
+<%- include('partials/header') %>
+
+<div class="error-page">
+  <h1>Error del servidor</h1>
+  <p>Lo sentimos, ha ocurrido un error. Inténtalo de nuevo más tarde.</p>
+  <% if (process.env.NODE_ENV === 'development' && error) { %>
+    <div class="error-details">
+      <pre><%= error.stack %></pre>
+    </div>
+  <% } %>
+  <a href="/" class="btn btn-primary">Volver al inicio</a>
+</div>

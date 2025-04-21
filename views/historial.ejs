@@ -1,0 +1,130 @@
+<%- include('partials/header') %>
+
+<div class="container">
+  <div class="back-link">
+    <a href="/dashboard">&larr; Volver al Dashboard</a>
+  </div>
+  
+  <h1>Historial de Equipos Consultados</h1>
+  
+  <div class="user-info-card">
+    <h2>Usuario</h2>
+    <p><strong>Nombre:</strong> <%= user.nombre %></p>
+    <p><strong>Centro de operación:</strong> <%= user.centro_operacion %></p>
+  </div>
+  
+  <div class="history-container">
+    <% if (equipos && equipos.length > 0) { %>
+      <% equipos.forEach(equipo => { %>
+        <div class="equipo-card">
+          <div class="equipo-image">
+            <img src="/img/equipos/<%= equipo.imagen || 'default.png' %>" alt="<%= equipo.nombre %>">
+          </div>
+          <div class="equipo-info">
+            <h3><%= equipo.nombre %></h3>
+            <p><strong>Fecha:</strong> <%= new Date(equipo.fecha_reporte).toLocaleDateString() %></p>
+            <p><strong>Falla:</strong> <%= equipo.falla_principal %></p>
+            <p><strong>Estado:</strong> <span class="estado-<%= equipo.estado %>"><%= equipo.estado %></span></p>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="no-data">
+        <p>No hay historial de equipos consultados.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<style>
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .back-link {
+    margin-bottom: 20px;
+  }
+  
+  .back-link a {
+    text-decoration: none;
+    color: #2196f3;
+    font-weight: bold;
+  }
+  
+  .user-info-card {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .history-container {
+    margin-top: 20px;
+  }
+  
+  .equipo-card {
+    display: flex;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .equipo-image {
+    width: 100px;
+    height: 100px;
+    margin-right: 20px;
+    flex-shrink: 0;
+  }
+  
+  .equipo-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  .equipo-info {
+    flex-grow: 1;
+  }
+  
+  .equipo-info h3 {
+    margin-top: 0;
+    font-size: 18px;
+    color: #333;
+  }
+  
+  .equipo-info p {
+    margin: 8px 0;
+    color: #555;
+  }
+  
+  .estado-reportado {
+    color: #f57c00;
+    font-weight: bold;
+  }
+  
+  .estado-en_proceso {
+    color: #2196f3;
+    font-weight: bold;
+  }
+  
+  .estado-resuelto {
+    color: #4caf50;
+    font-weight: bold;
+  }
+  
+  .no-data {
+    padding: 30px;
+    text-align: center;
+    background: #f5f5f5;
+    border-radius: 8px;
+    color: #757575;
+  }
+</style>
+
+<%- include('partials/footer') %>

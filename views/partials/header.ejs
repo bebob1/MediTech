@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | MediTech </title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <nav>
+        <div class="logo">MediTech</div>
+        <ul>
+          <% if (locals.user) { %>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/logout">Cerrar sesión</a></li>
+          <% } else { %>
+            <li><a href="/login">Iniciar sesión</a></li>
+            <li><a href="/register">Registrarse</a></li>
+          <% } %>
+        </ul>
+      </nav>
+    </header>
+    <main>

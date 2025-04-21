@@ -1,0 +1,184 @@
+<%- include('partials/header') %>
+
+<div class="container">
+  <div class="back-link">
+    <a href="/dashboard">&larr; Volver al Dashboard</a>
+  </div>
+  
+  <h1>Mi Perfil</h1>
+  
+  <div class="profile-container">
+    <div class="profile-header">
+      <div class="profile-avatar">
+        <img src="/img/avatars/default.png" alt="Avatar">
+      </div>
+      <div class="profile-title">
+        <h2><%= user.nombre %></h2>
+        <p>Centro de operación: <%= user.centro_operacion %></p>
+      </div>
+    </div>
+    
+    <div class="profile-form-container">
+      <h3>Editar información</h3>
+      
+      <form id="profileForm" action="/update-profile" method="POST">
+        <div class="form-group">
+          <label for="nombre">Nombre:</label>
+          <input type="text" id="nombre" name="nombre" value="<%= user.nombre %>" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="correo">Correo electrónico:</label>
+          <input type="email" id="correo" name="correo" value="<%= user.correo %>" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="centro_operacion">Centro de operación:</label>
+          <input type="text" id="centro_operacion" name="centro_operacion" value="<%= user.centro_operacion %>" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Nueva contraseña (dejar en blanco para no cambiar):</label>
+          <input type="password" id="password" name="password">
+        </div>
+        
+        <div class="form-group">
+          <label for="password_confirm">Confirmar nueva contraseña:</label>
+          <input type="password" id="password_confirm" name="password_confirm">
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Validación del formulario de perfil
+  document.getElementById('profileForm').addEventListener('submit', function(event) {
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('password_confirm').value;
+    
+    if (password !== passwordConfirm) {
+      event.preventDefault();
+      alert('Las contraseñas no coinciden');
+    }
+  });
+</script>
+
+<style>
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .back-link {
+    margin-bottom: 20px;
+  }
+  
+  .back-link a {
+    text-decoration: none;
+    color: #2196f3;
+    font-weight: bold;
+  }
+  
+  .profile-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  
+  .profile-header {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    margin-right: 20px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #ddd;
+  }
+  
+  .profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .profile-title h2 {
+    margin: 0 0 5px 0;
+    color: #333;
+  }
+  
+  .profile-title p {
+    margin: 0;
+    color: #666;
+  }
+  
+  .profile-form-container {
+    padding: 20px;
+  }
+  
+  .profile-form-container h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .form-actions {
+    margin-top: 30px;
+  }
+  
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-primary {
+    background-color: #2196f3;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #1976d2;
+  }
+</style>
+
+<%- include('partials/footer') %>

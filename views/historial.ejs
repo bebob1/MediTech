@@ -16,17 +16,26 @@
   <div class="history-container">
     <% if (equipos && equipos.length > 0) { %>
       <% equipos.forEach(equipo => { %>
-        <div class="equipo-card">
-          <div class="equipo-image">
-            <img src="/img/equipos/<%= equipo.imagen || 'default.png' %>" alt="<%= equipo.nombre %>">
+        <a href="/detalle-diagnostico/<%= equipo.diagnostico_id %>" class="equipo-card-link">
+          <div class="equipo-card">
+            <div class="equipo-image">
+              <img src="/img/equipos/<%= equipo.imagen || 'default.png' %>" alt="<%= equipo.nombre %>">
+            </div>
+            <div class="equipo-info">
+              <h3><%= equipo.nombre %></h3>
+              <% if(equipo.fecha) { 
+                const fecha = new Date(equipo.fecha);
+              %>
+                <p><strong>Fecha:</strong> <%= fecha.toLocaleDateString('es-ES') %></p>
+                <p><strong>Hora:</strong> <%= fecha.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) %></p>
+              <% } else { %>
+                <p><strong>Fecha:</strong> Fecha no disponible</p>
+                <p><strong>Hora:</strong> Hora no disponible</p>
+              <% } %>
+              <p><strong>Falla:</strong> <%= equipo.falla_principal %></p>
+            </div>
           </div>
-          <div class="equipo-info">
-            <h3><%= equipo.nombre %></h3>
-            <p><strong>Fecha:</strong> <%= new Date(equipo.fecha_reporte).toLocaleDateString() %></p>
-            <p><strong>Falla:</strong> <%= equipo.falla_principal %></p>
-            <p><strong>Estado:</strong> <span class="estado-<%= equipo.estado %>"><%= equipo.estado %></span></p>
-          </div>
-        </div>
+        </a>
       <% }); %>
     <% } else { %>
       <div class="no-data">
@@ -63,6 +72,18 @@
   
   .history-container {
     margin-top: 20px;
+  }
+  
+  .equipo-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .equipo-card-link:hover {
+    transform: translateY(-3px);
   }
   
   .equipo-card {

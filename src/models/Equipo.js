@@ -37,21 +37,21 @@ class Equipo {
     }
   }
   
-  // Obtener equipos con fallas reportadas por un usuario específico
-  static async getEquiposFallasByUsuario(usuarioId) {
+  // En Equipo.js, método getEquiposFallasByUsuario o similar
+  async getEquiposFallasByUsuario(usuarioId) {
     try {
-      const [rows] = await pool.query(`
-        SELECT e.id, e.nombre, e.modelo, e.imagen, hf.fecha_reporte, hf.estado,
-               d.nombre AS falla_principal
-        FROM historial_fallas hf
-        JOIN equipos e ON hf.equipo_id = e.id
-        JOIN diagnosticos d ON hf.diagnostico_id = d.id
-        WHERE hf.usuario_id = ?
-        ORDER BY hf.fecha_reporte DESC
-      `, [usuarioId]);
-      
+      const query = `
+        SELECT e.id, e.nombre, e.modelo, e.imagen, d.fecha, 
+              d.diagnostico AS falla_principal
+        FROM diagnosticos d
+        JOIN equipos e ON d.equipo_id = e.id
+        WHERE d.usuario_id = ?
+        ORDER BY d.fecha DESC
+      `;
+      const [rows] = await pool.query(query, [usuarioId]);
       return rows;
     } catch (error) {
+      console.error('Error al obtener equipos con fallas del usuario:', error);
       throw error;
     }
   }

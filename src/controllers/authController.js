@@ -113,34 +113,41 @@ exports.postRegister = async (req, res) => {
   }
 };
 
-// Renderizar dashboard
-exports.getDashboard = async (req, res) => {
-  try {
-    if (!req.session.userId) {
-      return res.redirect('/login');
+  // Renderizar dashboard
+  exports.getDashboard = async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        return res.redirect('/login');
+      }
+      
+      // Obtener datos del usuario actual
+      const user = await User.findById(userId);
+      
+      if (!user) {
+        req.session.destroy();
+        return res.redirect('/login');
+      }
+      
+      const equipoModel = new Equipo();
+      const equipos = await equipoModel.getEquiposFallasByUsuario(userId);
+      
+      res.render('dashboard', {
+        user: user,
+        equipos: equipos,
+        title: 'Dashboard'
+      });
+    } catch (error) {
+      console.error('Error en dashboard:', error);
+      res.status(500).render('error', {
+        title: 'Error del servidor',
+        message: 'Error al cargar el dashboard',
+        error: process.env.NODE_ENV === 'development' ? error : {}
+      });
     }
-    
-    const user = await User.findById(req.session.userId);
-    
-    if (!user) {
-      req.session.destroy();
-      return res.redirect('/login');
-    }
-    
-    // Obtener historial de equipos con fallas reportadas por el usuario
-    const equipos = await Equipo.getEquiposFallasByUsuario(req.session.userId);
-    
-    res.render('dashboard', { 
-      title: 'Panel de Control',
-      user,
-      equipos
-    });
-  } catch (error) {
-    console.error('Error en dashboard:', error);
-    res.redirect('/login');
-  }
-};
-
+  };
+  
 // Cerrar sesión
 exports.logout = (req, res) => {
   req.session.destroy((err) => {

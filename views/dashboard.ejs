@@ -27,48 +27,48 @@
       <p>Seleccione el equipo que presenta una falla</p>
       <div class="equipos-grid">
         <!-- Ventilador mecánico -->
-        <div class="equipo-select-card">
+        <div class="equipo-select-card" data-id="1">
           <div class="equipo-select-image">
             <img src="/imagenes/ventilador.png" alt="Ventilador mecánico">
           </div>
           <h3>Ventilador mecánico</h3>
-          <button class="btn btn-primary equipo-select-btn">Seleccionar</button>
+          <button class="btn btn-primary equipo-select-btn" data-id="1">Seleccionar</button>
         </div>
 
         <!-- Monitor de signos vitales -->
-        <div class="equipo-select-card">
+        <div class="equipo-select-card" data-id="2">
           <div class="equipo-select-image">
             <img src="/imagenes/monitor.png" alt="Monitor de signos vitales">
           </div>
           <h3>Monitor de signos vitales</h3>
-          <button class="btn btn-primary equipo-select-btn">Seleccionar</button>
+          <button class="btn btn-primary equipo-select-btn" data-id="2">Seleccionar</button>
         </div>
 
         <!-- Bomba de infusión -->
-        <div class="equipo-select-card">
+        <div class="equipo-select-card" data-id="3">
           <div class="equipo-select-image">
             <img src="/imagenes/bomba.png" alt="Bomba de infusión">
           </div>
           <h3>Bomba de infusión</h3>
-          <button class="btn btn-primary equipo-select-btn" onclick="alert('Funcionalidad en desarrollo')">Seleccionar</button>
+          <button class="btn btn-primary equipo-select-btn" data-id="3">Seleccionar</button>
         </div>
 
         <!-- Desfibrilador -->
-        <div class="equipo-select-card">
+        <div class="equipo-select-card" data-id="4">
           <div class="equipo-select-image">
             <img src="/imagenes/desfibrilador.png" alt="Desfibrilador">
           </div>
           <h3>Desfibrilador</h3>
-          <button class="btn btn-primary equipo-select-btn" onclick="alert('Funcionalidad en desarrollo')">Seleccionar</button>
+          <button class="btn btn-primary equipo-select-btn" data-id="4">Seleccionar</button>
         </div>
 
         <!-- Electrocardiógrafo -->
-        <div class="equipo-select-card">
+        <div class="equipo-select-card" data-id="5">
           <div class="equipo-select-image">
             <img src="/imagenes/electrocardio.png" alt="Electrocardiógrafo">
           </div>
           <h3>Electrocardiógrafo</h3>
-          <button class="btn btn-primary equipo-select-btn" onclick="alert('Funcionalidad en desarrollo')">Seleccionar</button>
+          <button class="btn btn-primary equipo-select-btn" data-id="5">Seleccionar</button>
         </div>
       </div>
     </div>
@@ -85,9 +85,16 @@
               </div>
               <div class="equipo-info">
                 <h3><%= equipo.nombre %></h3>
-                <p><strong>Fecha:</strong> <%= new Date(equipo.fecha_reporte).toLocaleDateString() %></p>
+                <% if(equipo.fecha) { 
+                  const fecha = new Date(equipo.fecha);
+                %>
+                  <p><strong>Fecha:</strong> <%= fecha.toLocaleDateString('es-ES') %></p>
+                  <p><strong>Hora:</strong> <%= fecha.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) %></p>
+                <% } else { %>
+                  <p><strong>Fecha:</strong> Fecha no disponible</p>
+                  <p><strong>Hora:</strong> Hora no disponible</p>
+                <% } %>
                 <p><strong>Falla:</strong> <%= equipo.falla_principal %></p>
-                <p><strong>Estado:</strong> <span class="estado-<%= equipo.estado %>"><%= equipo.estado %></span></p>
               </div>
             </div>
           <% }); %>
@@ -165,36 +172,35 @@
   });
 
   document.querySelectorAll('.equipo-select-btn').forEach(button => {
-  button.addEventListener('click', (event) => {
-    // Evitar que el evento se propague al div contenedor
-    event.stopPropagation();
-    
-    // Obtener el nombre del equipo
-    const equipoNombre = button.parentElement.querySelector('h3').textContent;
-    
-    // Por ahora usamos un ID genérico (1) para todos los equipos
-    // En una implementación real, cada equipo tendría su propio ID
-    const equipoId = 1;
-    
-    // Redireccionar a la página de diagnóstico
-    window.location.href = `/diagnostico/${equipoId}/${encodeURIComponent(equipoNombre)}`;
+    button.addEventListener('click', (event) => {
+      // Evitar que el evento se propague al div contenedor
+      event.stopPropagation();
+      
+      // Obtener el nombre del equipo
+      const equipoNombre = button.parentElement.querySelector('h3').textContent;
+      
+      // Obtener el ID del equipo desde el atributo data-id
+      const equipoId = button.getAttribute('data-id');
+      
+      // Redireccionar a la página de diagnóstico
+      window.location.href = `/diagnostico/${equipoId}/${encodeURIComponent(equipoNombre)}`;
+    });
   });
-});
 
-// También necesitamos actualizar el evento click para las tarjetas
-document.querySelectorAll('.equipo-select-card').forEach(card => {
-  card.addEventListener('click', () => {
-    // Simular clic en el botón de seleccionar
-    card.querySelector('.equipo-select-btn').click();
+  // También actualizamos el evento click para las tarjetas
+  document.querySelectorAll('.equipo-select-card').forEach(card => {
+    card.addEventListener('click', () => {
+      // Simular clic en el botón de seleccionar
+      card.querySelector('.equipo-select-btn').click();
+    });
   });
-});
 
   // Mostrar sección de equipo por defecto
   ocultarTodasLasSecciones();
   document.getElementById('equipoSection').style.display = 'block';
   document.querySelector('.equipos-grid').style.display = 'grid';
 
-  // Código corregido para el formulario de perfil
+  // Código para el formulario de perfil
   document.getElementById('perfilForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -443,6 +449,7 @@ document.querySelectorAll('.equipo-select-card').forEach(card => {
     text-align: center;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
+    cursor: pointer;
   }
 
   .equipo-select-card:hover {

@@ -92,10 +92,13 @@ async function initDb() {
     const createDiagnosticosTableQuery = `
       CREATE TABLE IF NOT EXISTS diagnosticos (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        nombre VARCHAR(255) NOT NULL,
-        descripcion TEXT,
-        solucion_recomendada TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        equipo_id INT NOT NULL,
+        usuario_id INT NOT NULL,
+        respuestas TEXT,
+        diagnostico TEXT,
+        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (equipo_id) REFERENCES equipos(id),
+        FOREIGN KEY (usuario_id) REFERENCES users(id)
       )
     `;
     await conn.query(createDiagnosticosTableQuery);

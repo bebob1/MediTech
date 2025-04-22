@@ -2,115 +2,119 @@ const Diagnostico = require('../models/Diagnostico');
 const Equipo = require('../models/Equipo');
 
 // Mostrar historial de diagnósticos
-// En historialDiagnosticoController.js
+// Modificar getHistorialDiagnosticos para que sea el renderizador final
 exports.getHistorialDiagnosticos = async (req, res) => {
-    try {
-      if (!req.session.userId) {
-        return res.redirect('/login');
-      }
-      
-      const userId = req.session.userId;
-      const esAdmin = req.session.userRole === 'admin';
-      
-      let diagnosticos;
-      if (esAdmin) {
-        diagnosticos = await Diagnostico.getAll();
-      } else {
-        diagnosticos = await Diagnostico.getByUsuario(userId);
-      }
-  
-      // Obtener información de equipos para cada diagnóstico dashboard
-      const diagnosticosConEquipos = await Promise.all(diagnosticos.map(async (diagnostico) => {
-        try {
-          const equipo = await Equipo.getById(diagnostico.equipo_id);
-          return {
-            ...diagnostico,
-            equipo_nombre: equipo ? equipo.nombre : 'Equipo desconocido',
-            equipo_imagen: equipo ? equipo.imagen : 'default.png'
-          };
-        } catch (error) {
-          console.error('Error al obtener equipo:', error);
-          return {
-            ...diagnostico,
-            equipo_nombre: 'Equipo desconocido',
-            equipo_imagen: 'default.png'
-          };
-        }
-      }));
-  
-      res.render('dashboard', {
-        title: 'Dashboard',
-        diagnosticos: diagnosticos,  // Cambiado de 'equipos' a 'diagnosticos'
-        user: {
-          id: req.session.userId,
-          nombre: req.session.userName,
-          centro_operacion: req.session.userCentroOperacion
-        },
-        esAdmin: esAdmin
-      });
-    } catch (error) {
-      console.error('Error al cargar historial de diagnósticos:', error);
-      if (req.flash) {
-        req.flash('error', 'Error al cargar el historial de diagnósticos');
-      }
-      res.redirect('/dashboard');
+  try {
+    if (!req.session.userId) {
+      return res.redirect('/login');
     }
-  };
+    
+    const userId = req.session.userId;
+    const esAdmin = req.session.userRole === 'admin';
+    
+    let diagnosticos;
+    if (esAdmin) {
+      diagnosticos = await Diagnostico.getAll();
+    } else {
+      diagnosticos = await Diagnostico.getByUsuario(userId);
+    }
 
-  
-  exports.getHistorialDashboard = async (req, res) => {
-    try {
-      if (!req.session.userId) {
-        return res.redirect('/login');
+    // Obtener información de equipos para cada diagnóstico
+    const diagnosticosConEquipos = await Promise.all(diagnosticos.map(async (diagnostico) => {
+      try {
+        const equipo = await Equipo.getById(diagnostico.equipo_id);
+        return {
+          ...diagnostico,
+          equipo_nombre: equipo ? equipo.nombre : 'Equipo desconocido',
+          equipo_imagen: equipo ? equipo.imagen : 'default.png'
+        };
+      } catch (error) {
+        console.error('Error al obtener equipo:', error);
+        return {
+          ...diagnostico,
+          equipo_nombre: 'Equipo desconocido',
+          equipo_imagen: 'default.png'
+        };
       }
-      
-      const userId = req.session.userId;
-      const esAdmin = req.session.userRole === 'admin';
-      
-      let diagnosticos;
-      if (esAdmin) {
-        diagnosticos = await Diagnostico.getAll();
-      } else {
-        diagnosticos = await Diagnostico.getByUsuario(userId);
-      }
-  
-      // Obtener información de equipos para cada diagnóstico
-      const diagnosticosConEquipos = await Promise.all(diagnosticos.map(async (diagnostico) => {
-        try {
-          const equipo = await Equipo.getById(diagnostico.equipo_id);
-          return {
-            ...diagnostico,
-            equipo_nombre: equipo ? equipo.nombre : 'Equipo desconocido',
-            equipo_imagen: equipo ? equipo.imagen : 'default.png'
-          };
-        } catch (error) {
-          console.error('Error al obtener equipo:', error);
-          return {
-            ...diagnostico,
-            equipo_nombre: 'Equipo desconocido',
-            equipo_imagen: 'default.png'
-          };
-        }
-      }));
-  
-      res.render('historial', {
-        title: 'Historial',
-        diagnosticos: diagnosticos,  // Cambiado de 'equipos' a 'diagnosticos'
-        user: {
-          id: req.session.userId,
-          nombre: req.session.userName,
-          centro_operacion: req.session.userCentroOperacion
-        },
-        esAdmin: esAdmin
-      });
-    } catch (error) {
-      console.error('Error al cargar historial de diagnósticos:', error);
-      if (req.flash) {
-        req.flash('error', 'Error al cargar el historial de diagnósticos');
-      }
-      res.redirect('/dashboard');
+    }));
+
+    // Combinar los datos con los que ya están en res.locals
+    const renderData = {
+      title: res.locals.title || 'Historial',
+      diagnosticos: diagnosticosConEquipos,
+      user: res.locals.user || {
+        id: req.session.userId,
+        nombre: req.session.userName,
+        centro_operacion: req.session.userCentroOperacion
+      },
+      esAdmin: esAdmin,
+      equipos: res.locals.equipos || []
+    };
+
+    res.render('historial', renderData);
+  } catch (error) {
+    console.error('Error al cargar historial de diagnósticos:', error);
+    if (req.flash) {
+      req.flash('error', 'Error al cargar el historial de diagnósticos');
     }
-  };
+    res.redirect('/dashboard');
+  }
+};
+
+// Modificar getHistorialDashboard para que sea el renderizador final
+exports.getHistorialDashboard = async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.redirect('/login');
+    }
+    
+    const userId = req.session.userId;
+    const esAdmin = req.session.userRole === 'admin';
+    
+    let diagnosticos;
+    if (esAdmin) {
+      diagnosticos = await Diagnostico.getAll();
+    } else {
+      diagnosticos = await Diagnostico.getByUsuario(userId);
+    }
+
+    // Obtener información de equipos para cada diagnóstico
+    const diagnosticosConEquipos = await Promise.all(diagnosticos.map(async (diagnostico) => {
+      try {
+        const equipo = await Equipo.getById(diagnostico.equipo_id);
+        return {
+          ...diagnostico,
+          equipo_nombre: equipo ? equipo.nombre : 'Equipo desconocido',
+          equipo_imagen: equipo ? equipo.imagen : 'default.png'
+        };
+      } catch (error) {
+        console.error('Error al obtener equipo:', error);
+        return {
+          ...diagnostico,
+          equipo_nombre: 'Equipo desconocido',
+          equipo_imagen: 'default.png'
+        };
+      }
+    }));
+
+    // Combinar los datos con los que ya están en res.locals
+    const renderData = {
+      title: res.locals.title || 'Dashboard',
+      diagnosticos: diagnosticosConEquipos,
+      user: res.locals.user,
+      equipos: res.locals.equipos || [],
+      esAdmin: esAdmin
+    };
+
+    res.render('dashboard', renderData);
+  } catch (error) {
+    console.error('Error al cargar historial de diagnósticos:', error);
+    if (req.flash) {
+      req.flash('error', 'Error al cargar el historial de diagnósticos');
+    }
+    res.redirect('/dashboard');
+  }
+};
 
 // Ver detalles de un diagnóstico específico
 exports.getDetalleDiagnostico = async (req, res) => {

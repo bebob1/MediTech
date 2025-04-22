@@ -114,7 +114,7 @@ exports.postRegister = async (req, res) => {
 };
 
   // Renderizar dashboard
-  exports.getDashboard = async (req, res) => {
+  exports.getDashboard = async (req, res, next) => {
     try {
       const userId = req.session.userId;
       
@@ -133,11 +133,13 @@ exports.postRegister = async (req, res) => {
       const equipoModel = new Equipo();
       const equipos = await equipoModel.getEquiposFallasByUsuario(userId);
       
-      res.render('dashboard', {
-        user: user,
-        equipos: equipos,
-        title: 'Dashboard'
-      });
+      // Guardar datos en res.locals en lugar de renderizar
+      res.locals.user = user;
+      res.locals.equipos = equipos;
+      res.locals.title = 'Dashboard';
+      
+      // Llamar a next() en lugar de renderizar
+      next();
     } catch (error) {
       console.error('Error en dashboard:', error);
       res.status(500).render('error', {
@@ -147,7 +149,7 @@ exports.postRegister = async (req, res) => {
       });
     }
   };
-  
+
 // Cerrar sesión
 exports.logout = (req, res) => {
   req.session.destroy((err) => {
@@ -159,9 +161,8 @@ exports.logout = (req, res) => {
 };
 
 // Obtener historial
-exports.getHistorial = async (req, res) => {
+exports.getHistorial = async (req, res, next) => {
   try {
-    // Obtener el ID del usuario actual
     const userId = req.session.userId;
     
     if (!userId) {
@@ -175,14 +176,12 @@ exports.getHistorial = async (req, res) => {
       return res.redirect('/login');
     }
     
-    // Buscar equipos consultados por este usuario
-    const equipos = await Equipo.getEquiposFallasByUsuario(userId);
+    // Guardar datos en res.locals en lugar de renderizar
+    res.locals.user = user;
+    res.locals.title = 'Historial de Equipos';
     
-    res.render('historial', {
-      title: 'Historial de Equipos',
-      user,
-      equipos
-    });
+    // Llamar a next() en lugar de renderizar
+    next();
   } catch (error) {
     console.error('Error al obtener historial:', error);
     res.redirect('/dashboard');

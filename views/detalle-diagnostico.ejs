@@ -2,7 +2,7 @@
 
 <div class="container">
   <div class="back-link">
-    <a href="/historial">&larr; Volver al Historial</a>
+    <a href="/dashboard">&larr; Volver al Dashboard</a>
   </div>
   
   <h1>Detalle de Diagnóstico</h1>
@@ -76,7 +76,6 @@
   <% } %>
   
   <div class="actions">
-    <button class="btn btn-primary" id="exportarPDF">Exportar a PDF</button>
     <% if (esAdmin) { %>
       <a href="/editar-diagnostico/<%= diagnostico.id %>" class="btn btn-secondary">Editar Diagnóstico</a>
     <% } %>
@@ -144,29 +143,6 @@
     
     // Inicializar en la primera pregunta
     mostrarPregunta(0);
-    
-    // Export PDF functionality
-    document.getElementById('exportarPDF').addEventListener('click', async function() {
-      try {
-        const response = await fetch(`/exportar-diagnostico-pdf/<%= diagnostico.id %>`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          alert(data.message);
-        } else {
-          alert('Error al exportar: ' + data.message);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Error al conectar con el servidor');
-      }
-    });
   });
 </script>
 

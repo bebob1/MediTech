@@ -26,20 +26,39 @@
     </div>
   </div>
   
-  <!-- Sección de Respuestas del Cuestionario -->
-<div class="card mb-4">
+  <!-- Sección de Respuestas del Cuestionario con paginador -->
+  <div class="card mb-4">
     <div class="card-header">
       <h5 class="mb-0">Respuestas del Cuestionario</h5>
     </div>
     <div class="card-body">
       <% if (diagnostico.respuestasArray && diagnostico.respuestasArray.length > 0) { %>
-        <div class="list-group">
+        <!-- Navegación de preguntas -->
+        <div class="preguntas-nav mb-3">
           <% diagnostico.respuestasArray.forEach((respuesta, index) => { %>
-            <div class="list-group-item">
-              <p class="fw-bold mb-1">Pregunta <%= index + 1 %>: <%= respuesta.pregunta || 'Sin pregunta' %></p>
-              <p class="mb-0">Respuesta: <%= respuesta.respuesta || 'Sin respuesta' %></p>
+            <button 
+              class="btn-pregunta <%= index === 0 ? 'active' : '' %>" 
+              data-index="<%= index %>">
+              <%= index + 1 %>
+            </button>
+          <% }); %>
+        </div>
+        
+        <!-- Contenedor de respuestas -->
+        <div class="respuestas-container">
+          <% diagnostico.respuestasArray.forEach((respuesta, index) => { %>
+            <div class="respuesta-item <%= index === 0 ? 'active' : '' %>" data-index="<%= index %>">
+              <p class="fw-bold mb-2">Pregunta <%= index + 1 %>: <%= respuesta.pregunta || 'Sin pregunta' %></p>
+              <p class="mb-3">Respuesta: <%= respuesta.respuesta || 'Sin respuesta' %></p>
             </div>
           <% }); %>
+        </div>
+        
+        <!-- Navegación anterior/siguiente -->
+        <div class="navegacion-preguntas mt-3">
+          <button class="btn btn-sm btn-outline-secondary" id="prevQuestion" <%= diagnostico.respuestasArray.length <= 1 ? 'disabled' : '' %>>Anterior</button>
+          <span id="paginaActual">1 de <%= diagnostico.respuestasArray.length %></span>
+          <button class="btn btn-sm btn-outline-secondary" id="nextQuestion" <%= diagnostico.respuestasArray.length <= 1 ? 'disabled' : '' %>>Siguiente</button>
         </div>
       <% } else { %>
         <p class="text-danger">No se pudieron cargar las respuestas. El formato puede ser incorrecto o no hay respuestas registradas.</p>
@@ -65,26 +84,89 @@
 </div>
 
 <script>
-  document.getElementById('exportarPDF').addEventListener('click', async function() {
-    try {
-      const response = await fetch(`/exportar-diagnostico-pdf/<%= diagnostico.id %>`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+  document.addEventListener('DOMContentLoaded', function() {
+    // Variables para la paginación de preguntas
+    const respuestaItems = document.querySelectorAll('.respuesta-item');
+    const btnPreguntas = document.querySelectorAll('.btn-pregunta');
+    const btnPrev = document.getElementById('prevQuestion');
+    const btnNext = document.getElementById('nextQuestion');
+    const paginaActual = document.getElementById('paginaActual');
+    let currentIndex = 0;
+    const totalPreguntas = respuestaItems.length;
+    
+    // Función para mostrar una pregunta específica
+    function mostrarPregunta(index) {
+      // Ocultar todas las respuestas
+      respuestaItems.forEach(item => {
+        item.classList.remove('active');
       });
       
-      const data = await response.json();
+      // Quitar la clase activa de todos los botones
+      btnPreguntas.forEach(btn => {
+        btn.classList.remove('active');
+      });
       
-      if (data.success) {
-        alert(data.message);
-      } else {
-        alert('Error al exportar: ' + data.message);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error al conectar con el servidor');
+      // Mostrar la respuesta actual
+      respuestaItems[index].classList.add('active');
+      btnPreguntas[index].classList.add('active');
+      
+      // Actualizar el contador
+      paginaActual.textContent = `${index + 1} de ${totalPreguntas}`;
+      
+      // Actualizar el índice actual
+      currentIndex = index;
+      
+      // Actualizar estado de los botones de navegación
+      btnPrev.disabled = currentIndex === 0;
+      btnNext.disabled = currentIndex === totalPreguntas - 1;
     }
+    
+    // Event listeners para los botones de las preguntas
+    btnPreguntas.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const index = parseInt(this.getAttribute('data-index'));
+        mostrarPregunta(index);
+      });
+    });
+    
+    // Event listeners para botones anterior/siguiente
+    btnPrev.addEventListener('click', function() {
+      if (currentIndex > 0) {
+        mostrarPregunta(currentIndex - 1);
+      }
+    });
+    
+    btnNext.addEventListener('click', function() {
+      if (currentIndex < totalPreguntas - 1) {
+        mostrarPregunta(currentIndex + 1);
+      }
+    });
+    
+    // Inicializar en la primera pregunta
+    mostrarPregunta(0);
+    
+    // Export PDF functionality
+    document.getElementById('exportarPDF').addEventListener('click', async function() {
+      try {
+        const response = await fetch(`/exportar-diagnostico-pdf/<%= diagnostico.id %>`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert(data.message);
+        } else {
+          alert('Error al exportar: ' + data.message);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al conectar con el servidor');
+      }
+    });
   });
 </script>
 
@@ -160,30 +242,65 @@
     white-space: pre-wrap;
   }
   
+  /* Estilos para la navegación de preguntas */
+  .preguntas-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+  
+  .btn-pregunta {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-pregunta:hover {
+    background: #e0e0e0;
+  }
+  
+  .btn-pregunta.active {
+    background: #2196f3;
+    color: white;
+    border-color: #2196f3;
+  }
+  
+  /* Estilos para los contenedores de respuestas */
   .respuestas-container {
-    margin-top: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    background: #f9f9f9;
+    min-height: 150px;
   }
   
   .respuesta-item {
-    margin-bottom: 15px;
-    border-bottom: 1px dashed #ddd;
-    padding-bottom: 15px;
+    display: none;
   }
   
-  .respuesta-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
+  .respuesta-item.active {
+    display: block;
   }
   
-  .pregunta {
+  /* Estilos para la navegación anterior/siguiente */
+  .navegacion-preguntas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  #paginaActual {
     font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-  }
-  
-  .respuesta {
-    padding-left: 10px;
     color: #555;
   }
   
@@ -212,6 +329,26 @@
   .btn-secondary {
     background-color: #757575;
     color: white;
+  }
+  
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  .btn-outline-secondary {
+    background-color: transparent;
+    border: 1px solid #757575;
+    color: #757575;
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .btn-outline-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   
   .btn:hover {

@@ -1,0 +1,227 @@
+<%- include('partials/header') %>
+
+<div class="container">
+  <div class="back-link">
+    <a href="/historial">&larr; Volver al Historial</a>
+  </div>
+  
+  <h1>Detalle de Diagnóstico</h1>
+  
+  <div class="diagnostico-header">
+    <div class="equipo-image">
+        <img src="<%= equipo.imagen || '/img/equipos/default.png' %>" alt="<%= equipo.nombre %>">
+    </div>
+    <div class="diagnostico-info">
+      <h2><%= diagnostico.equipo_nombre %></h2>
+      <p><strong>Fecha:</strong> <%= new Date(diagnostico.fecha).toLocaleDateString('es-ES') %></p>
+      <p><strong>Hora:</strong> <%= new Date(diagnostico.fecha).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) %></p>
+      <p><strong>Usuario:</strong> <%= diagnostico.usuario_nombre %></p>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h3>Diagnóstico Final</h3>
+    <div class="diagnostico-box">
+      <%= diagnostico.diagnostico %>
+    </div>
+  </div>
+  
+  <!-- Sección de Respuestas del Cuestionario -->
+<div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Respuestas del Cuestionario</h5>
+    </div>
+    <div class="card-body">
+      <% if (diagnostico.respuestasArray && diagnostico.respuestasArray.length > 0) { %>
+        <div class="list-group">
+          <% diagnostico.respuestasArray.forEach((respuesta, index) => { %>
+            <div class="list-group-item">
+              <p class="fw-bold mb-1">Pregunta <%= index + 1 %>: <%= respuesta.pregunta || 'Sin pregunta' %></p>
+              <p class="mb-0">Respuesta: <%= respuesta.respuesta || 'Sin respuesta' %></p>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <p class="text-danger">No se pudieron cargar las respuestas. El formato puede ser incorrecto o no hay respuestas registradas.</p>
+      <% } %>
+    </div>
+  </div>
+  
+  <% if (diagnostico.notas) { %>
+  <div class="card">
+    <h3>Notas Adicionales</h3>
+    <div class="notas-box">
+      <%= diagnostico.notas %>
+    </div>
+  </div>
+  <% } %>
+  
+  <div class="actions">
+    <button class="btn btn-primary" id="exportarPDF">Exportar a PDF</button>
+    <% if (esAdmin) { %>
+      <a href="/editar-diagnostico/<%= diagnostico.id %>" class="btn btn-secondary">Editar Diagnóstico</a>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  document.getElementById('exportarPDF').addEventListener('click', async function() {
+    try {
+      const response = await fetch(`/exportar-diagnostico-pdf/<%= diagnostico.id %>`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(data.message);
+      } else {
+        alert('Error al exportar: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al conectar con el servidor');
+    }
+  });
+</script>
+
+<style>
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .back-link {
+    margin-bottom: 20px;
+  }
+  
+  .back-link a {
+    text-decoration: none;
+    color: #2196f3;
+    font-weight: bold;
+  }
+  
+  .diagnostico-header {
+    display: flex;
+    margin-bottom: 30px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .equipo-image {
+    width: 120px;
+    height: 120px;
+    margin-right: 25px;
+    flex-shrink: 0;
+  }
+  
+  .equipo-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  
+  .diagnostico-info {
+    flex-grow: 1;
+  }
+  
+  .diagnostico-info h2 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  .card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .card h3 {
+    margin-top: 0;
+    color: #2196f3;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+  
+  .diagnostico-box, .notas-box {
+    background: #f9f9f9;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 10px;
+    white-space: pre-wrap;
+  }
+  
+  .respuestas-container {
+    margin-top: 15px;
+  }
+  
+  .respuesta-item {
+    margin-bottom: 15px;
+    border-bottom: 1px dashed #ddd;
+    padding-bottom: 15px;
+  }
+  
+  .respuesta-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  
+  .pregunta {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .respuesta {
+    padding-left: 10px;
+    color: #555;
+  }
+  
+  .actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+  }
+  
+  .btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-primary {
+    background-color: #2196f3;
+    color: white;
+  }
+  
+  .btn-secondary {
+    background-color: #757575;
+    color: white;
+  }
+  
+  .btn:hover {
+    opacity: 0.9;
+  }
+  
+  .error-message {
+    color: #f44336;
+    font-style: italic;
+  }
+</style>
+
+<%- include('partials/footer') %>

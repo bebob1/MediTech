@@ -37,7 +37,6 @@ class Equipo {
     }
   }
   
-  // En Equipo.js, método getEquiposFallasByUsuario o similar
   async getEquiposFallasByUsuario(usuarioId) {
     try {
       const query = `

@@ -72,39 +72,40 @@
         </div>
       </div>
     </div>
-
-    <!-- Sección de Historial -->
-    <div class="section" id="historialSection" style="display: none;">
-      <h2>Historial de equipos consultados</h2>
-      <div class="history-container">
-        <% if (equipos && equipos.length > 0) { %>
-          <% equipos.forEach(equipo => { %>
-            <div class="equipo-card">
-              <div class="equipo-image">
-                <img src="<%= equipo.imagen || '/img/equipos/default.png' %>" alt="<%= equipo.nombre %>">
-              </div>
-              <div class="equipo-info">
-                <h3><%= equipo.nombre %></h3>
-                <% if(equipo.fecha) { 
-                  const fecha = new Date(equipo.fecha);
-                %>
-                  <p><strong>Fecha:</strong> <%= fecha.toLocaleDateString('es-ES') %></p>
-                  <p><strong>Hora:</strong> <%= fecha.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) %></p>
-                <% } else { %>
-                  <p><strong>Fecha:</strong> Fecha no disponible</p>
-                  <p><strong>Hora:</strong> Hora no disponible</p>
-                <% } %>
-                <p><strong>Falla:</strong> <%= equipo.falla_principal %></p>
-              </div>
+<!-- Sección de Historial en dashboard.ejs -->
+<div class="section" id="historialSection" style="display: none;">
+  <h2>Historial de equipos consultados</h2>
+  <div class="history-container">
+    <% if (equipos && equipos.length > 0) { %>
+      <% equipos.forEach(equipo => { %>
+        <a href="/detalle-diagnostico/<%= equipo.id %>" class="equipo-card-button">
+          <div class="equipo-card">
+            <div class="equipo-image">
+              <img src="<%= equipo.imagen || '/img/equipos/default.png' %>" alt="<%= equipo.nombre %>">
             </div>
-          <% }); %>
-        <% } else { %>
-          <div class="no-data">
-            <p>No hay historial de equipos consultados.</p>
+            <div class="equipo-info">
+              <h3><%= equipo.nombre %></h3>
+              <% if(equipo.fecha) { 
+                const fecha = new Date(equipo.fecha);
+              %>
+                <p><strong>Fecha:</strong> <%= fecha.toLocaleDateString('es-ES') %></p>
+                <p><strong>Hora:</strong> <%= fecha.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) %></p>
+              <% } else { %>
+                <p><strong>Fecha:</strong> Fecha no disponible</p>
+                <p><strong>Hora:</strong> Hora no disponible</p>
+              <% } %>
+              <p><strong>Falla:</strong> <%= equipo.falla_principal %></p>
+            </div>
           </div>
-        <% } %>
+        </a>
+      <% }); %>
+    <% } else { %>
+      <div class="no-data">
+        <p>No hay historial de equipos consultados.</p>
       </div>
-    </div>
+    <% } %>
+  </div>
+</div>
 
     <!-- Sección de Perfil -->
     <div class="section" id="perfilSection" style="display: none;">
@@ -355,9 +356,23 @@
     margin-top: 15px;
   }
 
+  .equipo-card-button {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    margin-bottom: 15px;
+  }
+  
+  .equipo-card-button:hover {
+    transform: translateY(-3px);
+  }
+
   .equipo-card {
     display: flex;
-    margin-bottom: 15px;
     padding: 10px;
     background: #f5f5f5;
     border-radius: 6px;
@@ -469,6 +484,25 @@
     object-fit: contain;
     border-radius: 4px;
   }
+
+  .equipo-card-button {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  margin-bottom: 15px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.equipo-card-button:hover {
+  transform: translateY(-3px);
+}
+
 </style>
 
 <%- include('partials/footer') %>

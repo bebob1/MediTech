@@ -16,7 +16,7 @@
   <div class="history-container">
     <% if (equipos && equipos.length > 0) { %>
       <% equipos.forEach(equipo => { %>
-        <a href="/detalle-diagnostico/<%= equipo.diagnostico_id %>" class="equipo-card-link">
+        <a href="/detalle-diagnostico/<%= equipo.id %>" class="equipo-card-button">
           <div class="equipo-card">
             <div class="equipo-image">
               <img src="/img/equipos/<%= equipo.imagen || 'default.png' %>" alt="<%= equipo.nombre %>">
@@ -74,21 +74,26 @@
     margin-top: 20px;
   }
   
-  .equipo-card-link {
-    text-decoration: none;
-    color: inherit;
+  .equipo-card-button {
     display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    text-align: left;
     cursor: pointer;
     transition: transform 0.2s ease;
+    margin-bottom: 15px;
+    text-decoration: none;
+    color: inherit;
   }
   
-  .equipo-card-link:hover {
+  .equipo-card-button:hover {
     transform: translateY(-3px);
   }
   
   .equipo-card {
     display: flex;
-    margin-bottom: 15px;
     padding: 15px;
     background: white;
     border-radius: 8px;

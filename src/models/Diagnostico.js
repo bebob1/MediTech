@@ -8,7 +8,7 @@ class Diagnostico {
         SELECT d.*, e.nombre as equipo_nombre, u.nombre as usuario_nombre 
         FROM diagnosticos d
         JOIN equipos e ON d.equipo_id = e.id
-        JOIN usuarios u ON d.usuario_id = u.id
+        JOIN users u ON d.usuario_id = u.id
         ORDER BY d.fecha DESC
       `);
       return rows;
@@ -23,7 +23,7 @@ class Diagnostico {
       const [rows] = await pool.query(`
         SELECT d.*, u.nombre as usuario_nombre 
         FROM diagnosticos d
-        JOIN usuarios u ON d.usuario_id = u.id
+        JOIN users u ON d.usuario_id = u.id
         WHERE d.equipo_id = ?
         ORDER BY d.fecha DESC
       `, [equipoId]);
@@ -56,7 +56,7 @@ class Diagnostico {
         SELECT d.*, e.nombre as equipo_nombre, u.nombre as usuario_nombre 
         FROM diagnosticos d
         JOIN equipos e ON d.equipo_id = e.id
-        JOIN usuarios u ON d.usuario_id = u.id
+        JOIN users u ON d.usuario_id = u.id
         WHERE d.id = ?
       `, [id]);
       return rows[0] || null;

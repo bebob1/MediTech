@@ -150,8 +150,6 @@
 
   
 
-  // Finalizar diagnóstico y mostrar resultados
-
   async function finalizarDiagnostico() {
   try {
     // Ocultar preguntas y mostrar spinner de carga
@@ -161,7 +159,7 @@
     const equipoIdToSend = parseInt(equipoId, 10) || equipoId;
     
     // Enviar respuestas al servidor
-    const response = await fetch('/procesar-diagnostico', {
+    const response = await fetch('/procesar-diagnostico-bayesiano', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -172,23 +170,29 @@
       })
     });
     
-    const result = await response.json();
+    // Depurar la respuesta antes de intentar parsearla
+    const rawResponse = await response.text();
+    console.log("Respuesta cruda del servidor:", rawResponse);
     
-    if (result.success) {
-      // Mostrar resultado
-      document.getElementById('diagnosticoResultado').textContent = result.diagnostico;
-      document.getElementById('resultado-container').style.display = 'block';
-    } else {
-      alert('Error: ' + result.message);
+    try {
+      const result = JSON.parse(rawResponse);
+      
+      if (result.success) {
+        // Mostrar resultado
+        document.getElementById('diagnosticoResultado').textContent = result.diagnostico;
+        document.getElementById('resultado-container').style.display = 'block';
+      } else {
+        alert('Error: ' + result.message);
+      }
+    } catch (parseError) {
+      console.error("Error al analizar JSON:", parseError);
+      alert('Error al procesar los datos del diagnóstico. La respuesta del servidor no es un JSON válido.');
     }
   } catch (error) {
     console.error('Error al finalizar diagnóstico:', error);
     alert('Error al procesar el diagnóstico. Por favor, inténtelo nuevamente.');
   }
 }
-
-  
-
   // Event listeners para los botones
 
   document.getElementById('btnSi').addEventListener('click', () => responder('Sí'));

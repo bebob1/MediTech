@@ -367,36 +367,25 @@ function calcularProbabilidadesPosterior(tipoEquipo, sintomasObservados) {
 }
 
 /**
- * Obtiene los síntomas más característicos para las fallas principales
+ * Obtiene los síntomas más característicos para una falla específica
  * @param {string} tipoEquipo - Tipo de equipo
- * @param {Array} principalesFallas - Lista de las principales fallas
- * @returns {Array} - Lista de síntomas característicos
+ * @param {string} falla - Nombre de la falla
+ * @returns {Array} - Lista de síntomas característicos para esa falla
  */
-function obtenerSintomasCaracteristicos(tipoEquipo, principalesFallas) {
-  const sintomasCaracteristicos = [];
+function obtenerSintomasParaFalla(tipoEquipo, falla) {
+  const fallaKey = `${tipoEquipo}-${falla}`;
+  const sintomas = sintomas_por_falla[fallaKey];
   
-  for (const resultado of principalesFallas) {
-    const falla = resultado.falla;
-    const fallaKey = `${tipoEquipo}-${falla}`;
-    const sintomas = sintomas_por_falla[fallaKey];
-    
-    // Obtener los síntomas con mayor probabilidad para esta falla
-    const sintomasOrdenados = Object.entries(sintomas)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 2);  // Tomar los 2 síntomas más probables
-    
-    for (const [sintoma, prob] of sintomasOrdenados) {
-      if (prob > 0.7) {  // Solo síntomas con alta probabilidad
-        sintomasCaracteristicos.push({
-          falla: falla,
-          sintoma: sintoma,
-          probabilidad: prob
-        });
-      }
-    }
-  }
+  // Obtener los síntomas con mayor probabilidad para esta falla
+  const sintomasOrdenados = Object.entries(sintomas)
+    .sort((a, b) => b[1] - a[1])
+    .filter(([_, prob]) => prob > 0.7) // Solo síntomas con alta probabilidad
+    .slice(0, 3);  // Tomar hasta 3 síntomas más probables
   
-  return sintomasCaracteristicos;
+  return sintomasOrdenados.map(([sintoma, prob]) => ({
+    sintoma: sintoma,
+    probabilidad: prob
+  }));
 }
 
 /**
@@ -415,46 +404,53 @@ function diagnosticarBayesiano(tipoEquipo, respuestas) {
   // Obtener las 5 fallas más probables
   const principalesFallas = resultados.slice(0, 5);
   
-  // Obtener síntomas característicos para las fallas principales
-  const sintomasCaracteristicos = obtenerSintomasCaracteristicos(tipoEquipo, principalesFallas);
-  
   // Preparar información detallada para el diagnóstico
   let diagnosticoDetallado = "Basado en los síntomas reportados, se han identificado las siguientes posibles fallas:\n\n";
   
+  // Mapeo de códigos de síntomas a descripciones legibles
+  const sintomasDescripcion = {
+    "no_enciende": "equipo no enciende",
+    "cable_desconectado": "cable desconectado",
+    "fusible_quemado": "fusible quemado",
+    "bateria_mal_instalada": "batería mal instalada",
+    "presion_no_ajusta": "presión no se ajusta correctamente",
+    "alarmas_activadas": "alarmas activadas",
+    "problema_spo2": "problemas con la lectura de SpO2",
+    "interferencia_señal": "interferencia en la señal",
+    "no_administra_medicamento": "no administra medicamento",
+    "burbujas_lineas": "burbujas en las líneas",
+    "no_entrega_descarga": "no entrega descarga",
+    "no_detecta_señal": "no detecta señal cardíaca",
+    "electrodos_mal_puestos": "electrodos mal colocados"
+  };
+  
+  // Para cada falla principal, agregamos la falla seguida de sus síntomas característicos
   principalesFallas.forEach((resultado, index) => {
     const porcentaje = (resultado.probabilidad * 100).toFixed(2);
-    diagnosticoDetallado += `${index + 1}. ${resultado.falla}: ${porcentaje}%\n`;
+    const falla = resultado.falla;
+    
+    // Agregar la falla con su probabilidad
+    diagnosticoDetallado += `${index + 1}. ${falla}: ${porcentaje}%\n`;
+    
+    // Obtener y agregar los síntomas característicos de esta falla específica
+    const sintomasFalla = obtenerSintomasParaFalla(tipoEquipo, falla);
+    
+    if (sintomasFalla.length > 0) {
+      diagnosticoDetallado += "   Síntomas a verificar:\n";
+      
+      sintomasFalla.forEach(item => {
+        const descripcionSintoma = sintomasDescripcion[item.sintoma] || item.sintoma;
+        diagnosticoDetallado += `   - Verificar ${descripcionSintoma}\n`;
+      });
+    }
+    
+    // Agregar espacio entre fallas para mejor legibilidad
+    diagnosticoDetallado += "\n";
   });
   
-  // Añadir recomendaciones basadas en la falla más probable
+  // Añadir recomendación basada en la falla más probable
   const fallaPrincipal = principalesFallas[0].falla;
-  diagnosticoDetallado += `\nRecomendación principal: Se debe verificar ${fallaPrincipal.toLowerCase()}.\n`;
-  
-  // Añadir síntomas característicos como información adicional
-  if (sintomasCaracteristicos.length > 0) {
-    diagnosticoDetallado += "\nSíntomas característicos a verificar:\n";
-    
-    const sintomasDescripcion = {
-      "no_enciende": "equipo no enciende",
-      "cable_desconectado": "cable desconectado",
-      "fusible_quemado": "fusible quemado",
-      "bateria_mal_instalada": "batería mal instalada",
-      "presion_no_ajusta": "presión no se ajusta correctamente",
-      "alarmas_activadas": "alarmas activadas",
-      "problema_spo2": "problemas con la lectura de SpO2",
-      "interferencia_señal": "interferencia en la señal",
-      "no_administra_medicamento": "no administra medicamento",
-      "burbujas_lineas": "burbujas en las líneas",
-      "no_entrega_descarga": "no entrega descarga",
-      "no_detecta_señal": "no detecta señal cardíaca",
-      "electrodos_mal_puestos": "electrodos mal colocados"
-    };
-    
-    sintomasCaracteristicos.forEach(item => {
-      const descripcionSintoma = sintomasDescripcion[item.sintoma] || item.sintoma;
-      diagnosticoDetallado += `- Verificar ${descripcionSintoma} (asociado a ${item.falla})\n`;
-    });
-  }
+  diagnosticoDetallado += `Recomendación principal: Se debe verificar ${fallaPrincipal.toLowerCase()}.\n`;
   
   return {
     fallasProbables: principalesFallas,

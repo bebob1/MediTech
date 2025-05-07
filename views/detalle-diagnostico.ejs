@@ -21,7 +21,8 @@
   
   <div class="card">
     <h3>Diagnóstico Final</h3>
-    <div class="diagnostico-box">
+    <div class="diagnostico-box" id="diagnostico-contenido">
+      <!-- El diagnóstico será reemplazado por JavaScript para mostrar una versión formateada -->
       <%= diagnostico.diagnostico %>
     </div>
   </div>
@@ -143,6 +144,88 @@
     
     // Inicializar en la primera pregunta
     mostrarPregunta(0);
+    
+    // Formatear el diagnóstico para mostrar cada falla con sus verificaciones
+    function formatearDiagnostico() {
+      const diagnosticoBox = document.getElementById('diagnostico-contenido');
+      const contenidoDiagnostico = diagnosticoBox.innerHTML.trim();
+      
+      // Verificar si el texto contiene la estructura de diagnóstico bayesiano
+      if (contenidoDiagnostico.includes('se han identificado las siguientes posibles fallas')) {
+        try {
+          // Extraer las líneas con fallas y sus porcentajes
+          const fallas = [];
+          const lineasDiagnostico = contenidoDiagnostico.split('\n');
+          
+          // Buscar líneas numeradas con porcentajes
+          const patronFalla = /^\d+\.\s+([^:]+):\s+(\d+\.\d+)%$/;
+          
+          // Definir mapeo de fallas a verificaciones
+          const verificacionesPorFalla = {
+            'Filtros mal configurados': [
+              'Verificar filtros mal configurados'
+            ],
+            'Interferencia en la señal': [
+              'Verificar interferencia en la señal (asociado a Interferencia en la señal)'
+            ],
+            'Cable defectuoso': [
+              'Verificar interferencia en la señal (asociado a Cable defectuoso)'
+            ],
+            'Electrodos mal conectados': [
+              'Verificar electrodos mal colocados (asociado a Electrodos mal conectados)',
+              'Verificar interferencia en la señal (asociado a Electrodos mal conectados)'
+            ],
+            'Problema de alimentación eléctrica': [
+              'Verificar equipo no enciende (asociado a Problema de alimentación eléctrica)'
+            ]
+          };
+          
+          // Crear HTML formateado
+          let htmlFormateado = '<p><strong>Basado en los síntomas reportados, se han identificado las siguientes posibles fallas:</strong></p>';
+          
+          // Para cada línea que parece ser una falla
+          for (let i = 0; i < lineasDiagnostico.length; i++) {
+            const linea = lineasDiagnostico[i].trim();
+            if (linea.match(/^\d+\.\s+/)) {
+              // Extraer nombre de falla sin el porcentaje
+              const nombreFalla = linea.replace(/^\d+\.\s+/, '').replace(/:\s+\d+\.\d+%$/, '');
+              const porcentaje = linea.match(/(\d+\.\d+)%$/)?.[0] || '';
+              
+              htmlFormateado += `<div class="falla-item">`;
+              htmlFormateado += `<p class="falla-titulo"><strong>${linea}</strong></p>`;
+              
+              // Agregar verificaciones específicas para esta falla
+              if (verificacionesPorFalla[nombreFalla]) {
+                htmlFormateado += `<div class="verificaciones-lista">`;
+                htmlFormateado += `<p><strong>Síntomas característicos a verificar:</strong></p>`;
+                htmlFormateado += `<ul>`;
+                verificacionesPorFalla[nombreFalla].forEach(verificacion => {
+                  htmlFormateado += `<li>${verificacion}</li>`;
+                });
+                htmlFormateado += `</ul>`;
+                htmlFormateado += `</div>`;
+              }
+              
+              htmlFormateado += `</div>`;
+            }
+          }
+          
+          // Agregar la recomendación principal
+          const lineaRecomendacion = lineasDiagnostico.find(l => l.includes('Recomendación principal:'));
+          if (lineaRecomendacion) {
+            htmlFormateado += `<p class="recomendacion"><strong>${lineaRecomendacion}</strong></p>`;
+          }
+          
+          // Actualizar el contenido
+          diagnosticoBox.innerHTML = htmlFormateado;
+        } catch (error) {
+          console.error('Error al formatear el diagnóstico:', error);
+        }
+      }
+    }
+    
+    // Ejecutar el formateo del diagnóstico
+    formatearDiagnostico();
   });
 </script>
 
@@ -278,6 +361,45 @@
   #paginaActual {
     font-weight: bold;
     color: #555;
+  }
+  
+  /* Estilos para las fallas y verificaciones */
+  .falla-item {
+    background: #f0f7ff;
+    border-left: 4px solid #2196f3;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
+  
+  .falla-titulo {
+    margin-bottom: 10px;
+    color: #0d47a1;
+  }
+  
+  .verificaciones-lista {
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 4px;
+    margin-left: 10px;
+    border: 1px solid #e1e1e1;
+  }
+  
+  .verificaciones-lista ul {
+    margin: 5px 0;
+    padding-left: 20px;
+  }
+  
+  .verificaciones-lista li {
+    margin-bottom: 5px;
+  }
+  
+  .recomendacion {
+    background: #e8f5e9;
+    padding: 10px 15px;
+    border-left: 4px solid #4caf50;
+    border-radius: 4px;
+    color: #2e7d32;
   }
   
   .actions {

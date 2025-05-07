@@ -1,215 +1,326 @@
 <%- include('partials/header') %>
 
-
-
 <div class="diagnostico-container">
-
   <h1>Diagnóstico para <%= equipoNombre %></h1>
-
   
-
   <div class="progress-container">
-
     <div class="progress-bar" id="diagnosticoProgress"></div>
-
   </div>
-
   
-
   <div id="pregunta-container">
-
     <div class="pregunta-card" id="preguntaActual">
-
       <h3>Cargando preguntas...</h3>
-
     </div>
-
     
-
     <div class="opciones-container">
-
       <button class="btn btn-primary opcion-btn" id="btnSi">Sí</button>
-
       <button class="btn btn-danger opcion-btn" id="btnNo">No</button>
-
     </div>
-
   </div>
-
   
-
   <div id="resultado-container" style="display: none;">
-
     <h2>Resultado del diagnóstico</h2>
-
     <div class="resultado-card">
-
-      <p id="diagnosticoResultado"></p>
-
+      <div id="diagnosticoResultado"></div>
     </div>
-
     <div class="actions">
-
       <button class="btn btn-primary" id="btnVolver">Volver al Dashboard</button>
-
     </div>
-
   </div>
-
 </div>
 
-
-
 <script>
-
   // Datos para el diagnóstico
-
   const equipoId = '<%= equipoId %>';
-
   const equipoNombre = '<%= equipoNombre %>';
-
   const preguntas = JSON.parse('<%- JSON.stringify(preguntas) %>');
-
   
-
   let preguntaActual = 0;
-
   let respuestas = [];
-
   
-
   // Inicializar la primera pregunta
-
   function iniciarDiagnostico() {
-
     mostrarPregunta(0);
-
     actualizarProgreso();
-
   }
-
   
-
   // Mostrar una pregunta específica
-
   function mostrarPregunta(indice) {
-
     if (indice >= preguntas.length) {
-
       finalizarDiagnostico();
-
       return;
-
     }
-
     
-
     const preguntaElement = document.getElementById('preguntaActual');
-
     preguntaElement.innerHTML = `<h3>Pregunta ${indice + 1}/${preguntas.length}</h3><p>${preguntas[indice]}</p>`;
-
     preguntaActual = indice;
-
   }
-
   
-
   // Actualizar barra de progreso
-
   function actualizarProgreso() {
-
     const progreso = ((preguntaActual + 1) / preguntas.length) * 100;
-
     document.getElementById('diagnosticoProgress').style.width = `${progreso}%`;
-
   }
-
   
-
   // Registrar respuesta y avanzar
-
   function responder(respuesta) {
-
     respuestas.push({
-
       pregunta: preguntas[preguntaActual],
-
       respuesta: respuesta
-
     });
-
     
-
     // Avanzar a la siguiente pregunta
-
     mostrarPregunta(preguntaActual + 1);
-
     actualizarProgreso();
-
   }
-
   
+  // Función para formatear el diagnóstico en formato HTML similar a detalle-diagnostico.ejs
+  function formatearDiagnosticoBayesiano(diagnosticoTexto) {
+    // Verificamos si el texto contiene la estructura de diagnóstico bayesiano
+    if (diagnosticoTexto.includes('se han identificado las siguientes posibles fallas')) {
+      try {
+        // Definir mapeo completo de fallas a verificaciones basado en el árbol de decisiones
+        const verificacionesPorFalla = {
+          // Electrocardiógrafo (ECG)
+          'Filtros mal configurados': [
+            'Comprobar las configuraciones de filtro de línea base, muscular y de red',
+            'Solución: Configurar bien los filtros'
+          ],
+          'Interferencia en la señal': [
+            'Verificar si el paciente está en contacto con algún elemento metálico',
+            'Solución: Aislar al paciente de todo elemento metálico',
+            'Verificar si se depiló la zona de contacto',
+            'Solución: Depilar la zona de contacto',
+            'Verificar que los electrodos estén bien colocados',
+            'Solución: Colocar bien los electrodos',
+            'Verificar si hay defecto en el cable',
+            'Solución: Reemplazar el cable defectuoso'
+          ],
+          'Cable defectuoso': [
+            'Verificar si hay defectos visibles en el cable',
+            'Solución: Cambiar el cable',
+            'Verificar la conexión del cable con el equipo',
+            'Solución: Conectar bien el cable',
+            'Verificar si el problema está en la entrada del cable al equipo'
+          ],
+          'Electrodos mal conectados': [
+            'Verificar la correcta colocación de los electrodos',
+            'Solución: Colocar bien los electrodos',
+            'Asegurar que los electrodos tengan buen contacto con la piel',
+            'Verificar si se ha depilado la zona de contacto',
+            'Solución: Secar los electrodos en caso de que estén húmedos, cambiar los electrodos'
+          ],
+          'Problema de alimentación eléctrica': [
+            'Fusible quemado',
+            'Solución: Cambiar fusible quemado',
+            'Placa de circuito dañada',
+            'Solución: Comuniquese con el soporte técnico del equipo',
+            'No hay suministro eléctrico',
+            'Solución: Comunicarse con su entidad prestadora de energía'
+          ],
+          
+          // Ventilador Mecánico
+          'Batería defectuosa' : [
+            'Verifique la batería, conexiones y estado, pruebe el equipo con otra batería',
+            'Solución: Cambio de batería'
+          ],
+          'Problema en sensores de flujo': [
+            'Hay problemas en los sensores de flujo de la pieza de aire',
+            'Solución: Cambiar los sensores'
+          ],
+          'Problema de configuración' : [
+            'Hay problemas con la conexión al paciente',
+            'Solución: Probar cables nuevos con el paciente, verificar la conexión al paciente'
+          ],
+          'Conexión incorrecta al paciente' : [
+            'Hay problemas de configuración',
+            'Solución: Verifique que la configuración se ajusta a la necesidad de lo requerido'
+          ],
+          // Monitor de Signos Vitales
+          'Problema con lectura de SpO2': [
+            'Verificar que el cable esté bien conectado',
+            'Solución: Conectar bien el cable',
+            'Solución: Ubicar bien la pinza',
+            'Verificar si el paciente tiene elementos externos (como esmalte)',
+            'Solución: Retirar o limpiar los elementos externos',
+            'Revisar el sensor de SpO2',
+            'Verificar la configuración del equipo'
+          ],
+          'Sensores desconectados o defectuosos': [
+            'Verificar la conexión física de todos los sensores',
+            'Solución: Reconectar los sensores correctamente',
+            'Solución: Reemplazar sensores dañados',
+            'Verificar si los cables de los sensores están en buen estado',
+            'Solución: Reemplazar cables defectuosos',
+          ],
+          'Interferencia en las señales': [
+            'Verificar si hay equipos electrónicos cerca generando interferencia',
+            'Solución: Alejar equipos electrónicos que puedan causar interferencia',
+            'Verificar si los electrodos o sensores están correctamente colocados',
+            'Solución: Reposicionar electrodos y sensores',
+            'Solución: Desenredar y separar los cables'
+          ],
+          'Configuración incorrecta': [
+            'Verificar los rangos de alarma configurados',
+            'Solución: Ajustar los rangos de alarma según las necesidades del paciente',
+            'Solución: Recalibrar filtros y sensibilidad',
+            'Verificar la configuración de los parámetros de monitoreo',
+            'Solución: Configurar correctamente los parámetros de monitoreo'
+          ],
+          
+          // Bomba de infusión
+          'Aire en las líneas': [
+            'Verificar si hay burbujas visibles en las líneas',
+            'Solución: Sacar el aire de las líneas',
+            'Verificar si el sensor está sucio o dañado',
+            'Solución: Limpiar o reemplazar el sensor de burbujas'
+          ],
+          'Problema mecánico del motor': [
+            'No está llegando suficiente energía al motor',
+            'Solución: Probar un cable diferente, probar una toma diferente',
+            'Fusible dañado',
+            'Solución: Cambiar fusible',
+            'Motor en corto',
+            'Solución: revisar cables de alimentación, contactar con el ingeniero',
+            'Rodamientos desgastados',
+            'Solución: Cambiar rodamientos nuevos',
+            'Modo de seguridad activado',
+            "Solución: Entrar en configuración y desactivar el modo de seguridad"
+          ],
+          'Bolsa de medicamento vacía o mal conectada': [
+            'La bolsa de medicamento no tiene medicamento',
+            'Solución: Conectar una bolsa con medicamento',
+            'La bolsa esta mal conectada',
+            'Solución: Conectar bien la bolsa, conectar otro cable'
+          ],
+          'Cánula mal posicionada' : [
+            'Verificar la conexión de la cánula',
+            'Solución: Posicionar y conectar la cánula correctamente'
+          ],
+          
+          // Desfibrilador
+          'Electrodos mal conectados': [
+            'Comprobar la conexión de los electrodos',
+            'Solución: Conectar nuevamente los electrodos, probar con electrodos nuevos'
+          ],
+          'Palas defectuosas': [
+            'Problemas con las palas',
+            'Solución: Probar con nuevos cables la conexión de las palas, probar el mismo equipo con otras palas'
+          ],
+          'Sincronización incorrecta' : [
+            'Problema de sincronización',
+            'Solución: Entrar a configuración y realizar el proceso de sincronización'
+          ],
+          'Batería descargada': [
+            'Hay un problema con la batería interna del equipo',
+            'Solución: Probar una batería diferente, probar la batería en otro equipo'
+          ]
+        };
+        
+        // Extraer las líneas del diagnóstico
+        const lineasDiagnostico = diagnosticoTexto.split('\n');
+        
+        // Crear HTML formateado
+        let htmlFormateado = '<p><strong>Basado en los síntomas reportados, se han identificado las siguientes posibles fallas:</strong></p>';
+        
+        // Para cada línea que parece ser una falla
+        for (let i = 0; i < lineasDiagnostico.length; i++) {
+          const linea = lineasDiagnostico[i].trim();
+          if (linea.match(/^\d+\.\s+/)) {
+            // Extraer nombre de falla sin el porcentaje
+            const nombreFalla = linea.replace(/^\d+\.\s+/, '').replace(/:\s+\d+\.\d+%$/, '');
+            
+            htmlFormateado += `<div class="falla-item">`;
+            htmlFormateado += `<p class="falla-titulo"><strong>${linea}</strong></p>`;
+            
+            // Agregar verificaciones específicas para esta falla
+            if (verificacionesPorFalla[nombreFalla]) {
+              htmlFormateado += `<div class="verificaciones-lista">`;
+              htmlFormateado += `<p><strong>Síntomas característicos a verificar:</strong></p>`;
+              htmlFormateado += `<ul>`;
+              verificacionesPorFalla[nombreFalla].forEach(verificacion => {
+                htmlFormateado += `<li>${verificacion}</li>`;
+              });
+              htmlFormateado += `</ul>`;
+              htmlFormateado += `</div>`;
+            }
+            
+            htmlFormateado += `</div>`;
+          }
+        }
+        
+        // Agregar la recomendación principal
+        const lineaRecomendacion = lineasDiagnostico.find(l => l.includes('Recomendación principal:'));
+        if (lineaRecomendacion) {
+          htmlFormateado += `<p class="recomendacion"><strong>${lineaRecomendacion}</strong></p>`;
+        }
+        
+        return htmlFormateado;
+      } catch (error) {
+        console.error('Error al formatear el diagnóstico:', error);
+        return diagnosticoTexto; // En caso de error, devolver el texto original
+      }
+    }
+    
+    // Si no tiene la estructura esperada, devolver el texto original
+    return diagnosticoTexto;
+  }
 
   async function finalizarDiagnostico() {
-  try {
-    // Ocultar preguntas y mostrar spinner de carga
-    document.getElementById('pregunta-container').style.display = 'none';
-    
-    // Ensure equipoId is parsed as number if needed
-    const equipoIdToSend = parseInt(equipoId, 10) || equipoId;
-    
-    // Enviar respuestas al servidor
-    const response = await fetch('/procesar-diagnostico-bayesiano', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        equipoId: equipoIdToSend,
-        respuestas: respuestas
-      })
-    });
-    
-    // Depurar la respuesta antes de intentar parsearla
-    const rawResponse = await response.text();
-    console.log("Respuesta cruda del servidor:", rawResponse);
-    
     try {
-      const result = JSON.parse(rawResponse);
+      // Ocultar preguntas y mostrar spinner de carga
+      document.getElementById('pregunta-container').style.display = 'none';
       
-      if (result.success) {
-        // Mostrar resultado
-        document.getElementById('diagnosticoResultado').textContent = result.diagnostico;
-        document.getElementById('resultado-container').style.display = 'block';
-      } else {
-        alert('Error: ' + result.message);
+      // Ensure equipoId is parsed as number if needed
+      const equipoIdToSend = parseInt(equipoId, 10) || equipoId;
+      
+      // Enviar respuestas al servidor
+      const response = await fetch('/procesar-diagnostico-bayesiano', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          equipoId: equipoIdToSend,
+          respuestas: respuestas
+        })
+      });
+      
+      // Depurar la respuesta antes de intentar parsearla
+      const rawResponse = await response.text();
+      console.log("Respuesta cruda del servidor:", rawResponse);
+      
+      try {
+        const result = JSON.parse(rawResponse);
+        
+        if (result.success) {
+          // Formatear el diagnóstico con el mismo estilo que la página de detalle
+          const diagnosticoFormateado = formatearDiagnosticoBayesiano(result.diagnostico);
+          
+          // Mostrar resultado formateado
+          document.getElementById('diagnosticoResultado').innerHTML = diagnosticoFormateado;
+          document.getElementById('resultado-container').style.display = 'block';
+        } else {
+          alert('Error: ' + result.message);
+        }
+      } catch (parseError) {
+        console.error("Error al analizar JSON:", parseError);
+        alert('Error al procesar los datos del diagnóstico. La respuesta del servidor no es un JSON válido.');
       }
-    } catch (parseError) {
-      console.error("Error al analizar JSON:", parseError);
-      alert('Error al procesar los datos del diagnóstico. La respuesta del servidor no es un JSON válido.');
+    } catch (error) {
+      console.error('Error al finalizar diagnóstico:', error);
+      alert('Error al procesar el diagnóstico. Por favor, inténtelo nuevamente.');
     }
-  } catch (error) {
-    console.error('Error al finalizar diagnóstico:', error);
-    alert('Error al procesar el diagnóstico. Por favor, inténtelo nuevamente.');
   }
-}
-  // Event listeners para los botones
-
-  document.getElementById('btnSi').addEventListener('click', () => responder('Sí'));
-
-  document.getElementById('btnNo').addEventListener('click', () => responder('No'));
-
-  document.getElementById('btnVolver').addEventListener('click', () => window.location.href = '/dashboard');
-
   
-
+  // Event listeners para los botones
+  document.getElementById('btnSi').addEventListener('click', () => responder('Sí'));
+  document.getElementById('btnNo').addEventListener('click', () => responder('No'));
+  document.getElementById('btnVolver').addEventListener('click', () => window.location.href = '/dashboard');
+  
   // Iniciar diagnóstico cuando cargue la página
-
   window.onload = iniciarDiagnostico;
-
 </script>
-
-
 
 <style>
 
@@ -301,23 +412,7 @@
 
     font-weight: bold;
 
-  }
-
-  
-
-  .resultado-card {
-
-    background: #f5f5f5;
-
-    border-radius: 8px;
-
-    padding: 20px;
-
-    margin: 20px 0;
-
-  }
-
-  
+  } 
 
   .btn {
 
@@ -436,6 +531,53 @@
     color: #f44336;
 
   }
+
+  .falla-item {
+  background: #f0f7ff;
+  border-left: 4px solid #2196f3;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.falla-titulo {
+  margin-bottom: 10px;
+  color: #0d47a1;
+}
+
+.verificaciones-lista {
+  background: #ffffff;
+  padding: 10px;
+  border-radius: 4px;
+  margin-left: 10px;
+  border: 1px solid #e1e1e1;
+}
+
+.verificaciones-lista ul {
+  margin: 5px 0;
+  padding-left: 20px;
+}
+
+.verificaciones-lista li {
+  margin-bottom: 5px;
+}
+
+.recomendacion {
+  background: #e8f5e9;
+  padding: 10px 15px;
+  border-left: 4px solid #4caf50;
+  border-radius: 4px;
+  color: #2e7d32;
+}
+
+/* Mejorar estilo de la tarjeta de resultado */
+.resultado-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
 
 </style>
 

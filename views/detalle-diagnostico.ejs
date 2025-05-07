@@ -160,23 +160,141 @@
           // Buscar líneas numeradas con porcentajes
           const patronFalla = /^\d+\.\s+([^:]+):\s+(\d+\.\d+)%$/;
           
-          // Definir mapeo de fallas a verificaciones
+          // Definir mapeo completo de fallas a verificaciones basado en el árbol de decisiones
           const verificacionesPorFalla = {
+            // Electrocardiógrafo (ECG)
             'Filtros mal configurados': [
-              'Verificar filtros mal configurados'
+              'Comprobar las configuraciones de filtro de línea base, muscular y de red',
+              'Solución: Configurar bien los filtros'
             ],
             'Interferencia en la señal': [
-              'Verificar interferencia en la señal (asociado a Interferencia en la señal)'
+              'Verificar si el paciente está en contacto con algún elemento metálico',
+              'Solución: Aislar al paciente de todo elemento metálico',
+              'Verificar si se depiló la zona de contacto',
+              'Solución: Depilar la zona de contacto',
+              'Verificar que los electrodos estén bien colocados',
+              'Solución: Colocar bien los electrodos',
+              'Verificar si hay defecto en el cable',
+              'Solución: Reemplazar el cable defectuoso'
             ],
             'Cable defectuoso': [
-              'Verificar interferencia en la señal (asociado a Cable defectuoso)'
+              'Verificar si hay defectos visibles en el cable',
+              'Solución: Cambiar el cable',
+              'Verificar la conexión del cable con el equipo',
+              'Solución: Conectar bien el cable',
+              'Verificar si el problema está en la entrada del cable al equipo'
             ],
             'Electrodos mal conectados': [
-              'Verificar electrodos mal colocados (asociado a Electrodos mal conectados)',
-              'Verificar interferencia en la señal (asociado a Electrodos mal conectados)'
+              'Verificar la correcta colocación de los electrodos',
+              'Solución: Colocar bien los electrodos',
+              'Asegurar que los electrodos tengan buen contacto con la piel',
+              'Verificar si se ha depilado la zona de contacto',
+              'Solución: Secar los electrodos en caso de que estén húmedos, cambiar los electrodos'
             ],
             'Problema de alimentación eléctrica': [
-              'Verificar equipo no enciende (asociado a Problema de alimentación eléctrica)'
+              'Fusible quemado',
+              'Solución: Cambiar fusible quemado',
+              'Placa de circuito dañada',
+              'Solución: Comuniquese con el soporte técnico del equipo',
+              'No hay suministro eléctrico',
+              'Solución: Comunicarse con su entidad prestadora de energía'
+            ],
+            
+            // Ventilador Mecánico
+            'Batería defectuosa' : [
+              'Verifique la batería, conexiones y estado, pruebe el equipo con otra batería',
+              'Solución: Cambio de batería'
+            ],
+            'Problema en sensores de flujo': [
+              'Hay problemas en los sensores de flujo de la pieza de aire',
+              'Solución: Cambiar los sensores'
+            ],
+            'Problema de configuración' : [
+            'Hay problemas con la conexión al paciente',
+            'Solución: Probar cables nuevos con el paciente, verificar la conexión al paciente'
+            ],
+            'Conexión incorrecta al paciente' : [
+            'Hay problemas de configuración',
+            'Solución: Verifique que la configuración se ajusta a la necesidad de lo requerido'
+            ],
+            // Monitor de Signos Vitales
+            'Problema con lectura de SpO2': [
+              'Verificar que el cable esté bien conectado',
+              'Solución: Conectar bien el cable',
+              'Solución: Ubicar bien la pinza',
+              'Verificar si el paciente tiene elementos externos (como esmalte)',
+              'Solución: Retirar o limpiar los elementos externos',
+              'Revisar el sensor de SpO2',
+              'Verificar la configuración del equipo'
+            ],
+            'Sensores desconectados o defectuosos': [
+              'Verificar la conexión física de todos los sensores',
+              'Solución: Reconectar los sensores correctamente',
+              'Solución: Reemplazar sensores dañados',
+              'Verificar si los cables de los sensores están en buen estado',
+              'Solución: Reemplazar cables defectuosos',
+            ],
+            'Interferencia en las señales': [
+              'Verificar si hay equipos electrónicos cerca generando interferencia',
+              'Solución: Alejar equipos electrónicos que puedan causar interferencia',
+              'Verificar si los electrodos o sensores están correctamente colocados',
+              'Solución: Reposicionar electrodos y sensores',
+              'Solución: Desenredar y separar los cables'
+            ],
+            'Configuración incorrecta': [
+              'Verificar los rangos de alarma configurados',
+              'Solución: Ajustar los rangos de alarma según las necesidades del paciente',
+              'Solución: Recalibrar filtros y sensibilidad',
+              'Verificar la configuración de los parámetros de monitoreo',
+              'Solución: Configurar correctamente los parámetros de monitoreo'
+            ],
+            
+            // Bomba de infusión
+            'Aire en las líneas': [
+              'Verificar si hay burbujas visibles en las líneas',
+              'Solución: Sacar el aire de las líneas',
+              'Verificar si el sensor está sucio o dañado',
+              'Solución: Limpiar o reemplazar el sensor de burbujas'
+            ],
+            'Problema mecánico del motor': [
+              'No está llegando suficiente energía al motor',
+              'Solción: Probar un cable diferente, probar una toma diferente',
+              'Fusible dañádo',
+              'Solución: Cambiar fusible',
+              'Motor en corto',
+              'Solución: revisar cables de alimentación, contactar con el ingeniero',
+              'Rodamientos desgastados',
+              'Solución: Cambiar rodamientos nuevos',
+              'Modo de seguridad activado',
+              "Solución: Entrar en configuración y desactivar el modo de seguridad"
+            ],
+            'Bolsa de medicamento vacía o mal conectada': [
+              'La bolsa de medicamento no tiene medicamento',
+              'Solución: Conectar una bolsa con medicamento',
+              'La bolsa esta mal conectada',
+              'Solución: Conectar bien la bolsa, conectar otro cable'
+            ],
+            'Cánula mal posicionada' : [
+              'Verificar la conexión de la cánula',
+              'Solución: Posicionar y conectar la cánula correctamente'
+            ],
+            
+            // Desfibrilador
+            'Electrodos mal conectados': [
+              'Comprobar la conexión de los electrodos',
+              'Solución: Conectar nuevamente los electrodos, probar con electrodos nuevos'
+            ],
+            'Palas defectuosas': [
+              'Problemas con las palas',
+              'Solución: Probar con nuevos cables la conexión de las palas, probar el mismo equipo con otras palas'
+            ],
+            'Sincronización incorrecta' : [
+              'Problema de sincronización',
+              'Solución: Entrar a configuración y realizar el proceso de sincronización'
+            ],
+            'Batería descargada': [
+              'Hay un problema con la batería interna del equipo',
+              'Solución: Probar una batería diferente, probar la batería en otro equipo'
             ]
           };
           

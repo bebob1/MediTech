@@ -217,7 +217,6 @@ exports.procesarDiagnostico = async (req, res) => {
       });
     }
     
-    // Rest of the function...
 
     // Registramos las respuestas en la base de datos
 

@@ -3,7 +3,6 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Configuración de la base de datos
 const dbConfig = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -11,13 +10,10 @@ const dbConfig = {
   database: process.env.DB_NAME
 };
 
-// Crear pool de conexiones
 const pool = mysql.createPool(dbConfig);
 
-// Inicializar la base de datos
 async function initDb() {
   try {
-    // Crear la base de datos si no existe
     const connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
@@ -28,11 +24,9 @@ async function initDb() {
     await connection.end();
     
     const conn = await pool.getConnection();
-
-    // Crear las tablas en el orden correcto
     console.log('Creando nuevas tablas...');
     
-    // Crear la tabla de roles
+    // Tabla roles
     const createRolesTableQuery = `
       CREATE TABLE IF NOT EXISTS roles (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -43,9 +37,19 @@ async function initDb() {
     `;
     await conn.query(createRolesTableQuery);
     console.log('Tabla roles creada correctamente');
-    
-    // Crear la tabla de usuarios
-    const createTableQuery = `
+
+    // Insertar roles
+    const insertRolesQuery = `
+      INSERT IGNORE INTO roles (id, nombre, descripcion, created_at) VALUES
+      (1, 'admin', 'Administrador del sistema', NOW()),
+      (2, 'doctor', 'Usuario médico', NOW()),
+      (3, 'ingeniero', 'Ingeniero de servicio técnico', NOW())
+    `;
+    await conn.query(insertRolesQuery);
+    console.log('Roles insertados correctamente');
+
+    // Tabla usuarios
+    const createUsersTableQuery = `
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nombre VARCHAR(100) NOT NULL,
@@ -57,10 +61,10 @@ async function initDb() {
         FOREIGN KEY (rol_id) REFERENCES roles(id)
       )
     `;
-    await conn.query(createTableQuery);
+    await conn.query(createUsersTableQuery);
     console.log('Tabla users creada correctamente');
     
-    // Crear la tabla de equipos médicos
+    // Tabla equipos
     const createEquiposTableQuery = `
       CREATE TABLE IF NOT EXISTS equipos (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -76,19 +80,20 @@ async function initDb() {
     `;
     await conn.query(createEquiposTableQuery);
     console.log('Tabla equipos creada correctamente');
-    
-    // Crear la tabla de síntomas
-    const createSintomasTableQuery = `
-      CREATE TABLE IF NOT EXISTS sintomas (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        descripcion VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+
+    // Insertar equipos médicos
+    const insertEquiposQuery = `
+      INSERT IGNORE INTO equipos (nombre, modelo, numero_serie, ubicacion, centro_id, estado, imagen) VALUES
+      ('Ventilador mecánico', 'VentiMax Pro-2000', 'VM20231001', 'UCI - Sala 3', 'HOSP001', 'activo', '/imagenes/ventilador.png'),
+      ('Monitor de signos vitales', 'VitalMonitor X5', 'MSV20230587', 'Emergencias - Box 2', 'HOSP001', 'activo', '/imagenes/monitor.png'),
+      ('Bomba de infusión', 'InfuSystem Plus', 'BI20232145', 'Hospitalización - Piso 4', 'HOSP001', 'activo', '/imagenes/bomba.png'),
+      ('Desfibrilador', 'CardioShock D300', 'DF20231234', 'Reanimación - Sala 1', 'HOSP001', 'activo', '/imagenes/desfibrilador.png'),
+      ('Electrocardiógrafo', 'CardioGraph ECG12', 'EC20230076', 'Cardiología - Consultorio 5', 'HOSP001', 'activo', '/imagenes/electrocardio.png')
     `;
-    await conn.query(createSintomasTableQuery);
-    console.log('Tabla sintomas creada correctamente');
-    
-    // Crear la tabla de diagnósticos
+    await conn.query(insertEquiposQuery);
+    console.log('Equipos médicos insertados correctamente');
+
+    // Tabla diagnosticos
     const createDiagnosticosTableQuery = `
       CREATE TABLE IF NOT EXISTS diagnosticos (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -103,62 +108,27 @@ async function initDb() {
     `;
     await conn.query(createDiagnosticosTableQuery);
     console.log('Tabla diagnosticos creada correctamente');
-    
-    // Crear la tabla de historial de fallas
-    const createHistorialFallasTableQuery = `
-      CREATE TABLE IF NOT EXISTS historial_fallas (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        equipo_id INT NOT NULL,
-        usuario_id INT NOT NULL,
-        diagnostico_id INT NOT NULL,
-        fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        estado ENUM('reportado', 'en_proceso', 'resuelto') DEFAULT 'reportado',
-        notas TEXT,
-        FOREIGN KEY (equipo_id) REFERENCES equipos(id),
-        FOREIGN KEY (usuario_id) REFERENCES users(id),
-        FOREIGN KEY (diagnostico_id) REFERENCES diagnosticos(id)
-      )
-    `;
-    await conn.query(createHistorialFallasTableQuery);
-    console.log('Tabla historial_fallas creada correctamente');
-    
-    // Crear tabla para relacionar síntomas con historial de fallas
-    const createFallaSintomasTableQuery = `
-      CREATE TABLE IF NOT EXISTS falla_sintomas (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        falla_id INT NOT NULL,
-        sintoma_id INT NOT NULL,
-        FOREIGN KEY (falla_id) REFERENCES historial_fallas(id),
-        FOREIGN KEY (sintoma_id) REFERENCES sintomas(id)
-      )
-    `;
-    await conn.query(createFallaSintomasTableQuery);
-    console.log('Tabla falla_sintomas creada correctamente');
-    
-    // Crear tabla para relacionar síntomas con diagnósticos (para el sistema experto)
+
+    // Tabla diagnostico_sintomas (sin sintomas)
     const createDiagnosticoSintomasTableQuery = `
       CREATE TABLE IF NOT EXISTS diagnostico_sintomas (
         id INT AUTO_INCREMENT PRIMARY KEY,
         diagnostico_id INT NOT NULL,
-        sintoma_id INT NOT NULL,
-        peso FLOAT DEFAULT 1.0, /* Peso o relevancia del síntoma para este diagnóstico */
-        FOREIGN KEY (diagnostico_id) REFERENCES diagnosticos(id),
-        FOREIGN KEY (sintoma_id) REFERENCES sintomas(id)
+        peso FLOAT DEFAULT 1.0,
+        FOREIGN KEY (diagnostico_id) REFERENCES diagnosticos(id)
       )
     `;
     await conn.query(createDiagnosticoSintomasTableQuery);
     console.log('Tabla diagnostico_sintomas creada correctamente');
-    
+
     conn.release();
-    
-    console.log('Base de datos inicializada correctamente con todas las tablas recreadas');
+    console.log('Base de datos inicializada correctamente con datos de prueba');
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
     process.exit(1);
   }
 }
 
-// Inicializar la base de datos al iniciar la aplicación
 initDb();
 
 module.exports = {
